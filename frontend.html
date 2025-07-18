@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Creative Leaderboard App</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-image: url('https://images.unsplash.com/photo-1504384308090-c894fdcc538d'); /* Any public background */
+      background-size: cover;
+      background-position: center;
+      margin: 0;
+      padding: 0;
+      color: #fff;
+    }
+    .container {
+      background-color: rgba(0, 0, 0, 0.7);
+      margin: 40px auto;
+      padding: 30px;
+      max-width: 700px;
+      border-radius: 10px;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #f7c948;
+    }
+    input, button {
+      padding: 10px;
+      margin: 5px;
+      border-radius: 6px;
+      border: none;
+      font-size: 14px;
+    }
+    button {
+      background-color: #f7c948;
+      color: #222;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #ffdc73;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      background: #333;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .actions button {
+      background: crimson;
+      color: white;
+      margin-left: 10px;
+    }
+    .actions button:hover {
+      background: darkred;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🏆 Leaderboard</h1>
+    <button onclick="fetchLeaderboard()">Refresh Leaderboard</button>
+    <ul id="leaderboard"></ul>
+
+    <h2>Add User</h2>
+    <input type="text" id="username" placeholder="Enter name" />
+    <button onclick="addUser()">Add User</button>
+
+    <h2>Claim Points</h2>
+    <input type="text" id="claimname" placeholder="Enter name" />
+    <input type="number" id="claimpoints" placeholder="Points (e.g. 10)" />
+    <button onclick="claimPoints()">Claim Points</button>
+  </div>
+
+  <script>
+    async function fetchLeaderboard() {
+      try {
+        const res = await fetch('http://localhost:5000/api/users');
+        const users = await res.json();
+        const list = document.getElementById('leaderboard');
+        list.innerHTML = '';
+
+        users.forEach(user => {
+          const li = document.createElement('li');
+          li.innerHTML = `
+            ${user.name}: ${user.totalPoints} pts
+            <div class="actions">
+              <button onclick="deleteUser('${user._id}')">🗑️ Delete</button>
+            </div>
+          `;
+          list.appendChild(li);
+        });
+      } catch (err) {
+        alert('Error loading leaderboard');
+        console.error(err);
+      }
+    }
+
+    async function addUser() {
+      const name = document.getElementById('username').value.trim();
+      if (!name) return alert("Enter a name");
+
+      try {
+        const res = await fetch('http://localhost:5000/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+        const result = await res.json();
+        alert('User added!');
+        fetchLeaderboard();
+      } catch (err) {
+        alert('Error adding user');
+        console.error(err);
+      }
+    }
+
+    async function claimPoints() {
+      const name = document.getElementById('claimname').value.trim();
+      const points = parseInt(document.getElementById('claimpoints').value);
+
+      if (!name || isNaN(points)) return alert("Enter name and valid points");
+
+      try {
+        const usersRes = await fetch('http://localhost:5000/api/users');
+        const users = await usersRes.json();
+        const user = users.find(u => u.name.toLowerCase() === name.toLowerCase());
+
+        if (!user) return alert('User not found');
+
+        const res = await fetch('http://localhost:5000/api/claim', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user._id, points })
+        });
+
+        const result = await res.json();
+        alert(`${user.name} claimed ${result.points} points!`);
+        fetchLeaderboard();
+      } catch (err) {
+        alert('Error claiming points');
+        console.error(err);
+      }
+    }
+
+    async function deleteUser(userId) {
+      if (!confirm('Are you sure you want to delete this user?')) return;
+      try {
+        await fetch(`http://localhost:5000/api/users/${userId}`, {
+          method: 'DELETE'
+        });
+        alert('User deleted!');
+        fetchLeaderboard();
+      } catch (err) {
+        alert('Error deleting user');
+        console.error(err);
+      }
+    }
+
+    fetchLeaderboard(); // Initial load
+  </script>
+</body>
+</html>
