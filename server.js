@@ -20,10 +20,8 @@ const userRoutes = require('./routes/userRoutes');
 app.use('/api', userRoutes);
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+// MongoDB Connection
+mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('✅ Connected to MongoDB');
     app.listen(PORT, () => {
@@ -33,3 +31,4 @@ mongoose.connect(process.env.MONGO_URI, {
   .catch((err) => {
     console.error('❌ MongoDB connection error:', err.message);
   });
+
