@@ -1,4 +1,4 @@
-// server.js or index.js
+// server.js
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -15,11 +15,19 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Routes
+// Default route for testing in browser
+app.get('/', (req, res) => {
+  res.send('🚀 Leaderboard backend is running!');
+});
+
+// API routes
 const userRoutes = require('./routes/userRoutes');
 app.use('/api', userRoutes);
 
-// MongoDB Connection
+app.get('/', (req, res) => {
+  res.send('Backend is running successfully 🚀');
+});
+
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
@@ -31,4 +39,3 @@ mongoose.connect(process.env.MONGO_URI)
   .catch((err) => {
     console.error('❌ MongoDB connection error:', err.message);
   });
-
