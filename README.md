@@ -120,4 +120,4 @@ Export leaderboard to CSV/PDF.
 
 👨‍💻 Author
 
-Developed by Your Name 🚀
+Developed by CHENNA RUPA SREE 🚀
